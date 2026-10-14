@@ -1,24 +1,20 @@
-# Context Nudge 0.1 — protótipo de teste
+# Context Nudge 0.2
 
-Aplicativo independente em Kotlin. Não contém código nem recursos proprietários da Samsung. Processa texto localmente e abre a tela de criação de evento do calendário para revisão, sem salvar automaticamente.
+Independent Android Kotlin prototype. Local, opt-in notification processing via `NotificationListenerService`.
 
-## Como obter um APK usando GitHub Actions (sem instalar Android Studio)
+## Installation
+Upload the *contents* of this directory to the root of your GitHub repository. Preserve `.github/workflows/build.yml`; remove old duplicate workflows. The GitHub Action compiles `app-debug.apk`.
 
-1. Crie um repositório GitHub **privado** e envie o conteúdo desta pasta para a raiz do repositório, incluindo `.github/workflows/build-apk.yml`.
-2. Abra **Actions** > **Build test APK** > **Run workflow**. Se a interface pedir, habilite Actions no repositório.
-3. Aguarde a execução ficar verde. Abra a execução e, em **Artifacts**, baixe `ContextNudge-debug-apk`.
-4. Extraia o ZIP baixado: dentro dele estará `app-debug.apk`. Transfira para o S23 e instale-o. O Android pode solicitar autorização para instalar aplicativos desta origem.
-5. Abra **Context Nudge**, digite `Amanhã às 15h vamos ao shopping`, toque em **Analisar texto** e depois **Revisar no calendário**.
+If the new APK does not install over the old one because the debug signing key differs, uninstall the old version first (it does not retain user data). Back up anything you need beforehand.
 
-O arquivo ZIP do projeto **não é um APK**. A compilação ainda não foi executada neste ambiente. Não compartilhe o APK com terceiros como se fosse uma versão final.
+## Test
+1. Launch app. Notification analysis defaults OFF.
+2. Grant notification posting permission and enable Context Nudge under Android Notification access.
+3. Toggle analysis ON in the app. Optional: exclude source apps by package name, one per line.
+4. Have another device send a test message: `Amanhã às 15h vamos ao shopping` to an app that displays its text in a notification.
+5. Tap the Context Nudge suggestion notification; review the calendar event and save manually if desired.
+6. Turn analysis OFF to stop processing. Revoke notification access in Android Settings to remove access completely.
 
-## Compilação local alternativa
+Privacy: notification text is processed in memory, no text history or network permission. App notification only contains generic text. Avoid testing with sensitive real messages. Android notification access is broad even though the app filters content; exclusions are applied after Android grants access. The parser is deliberately conservative: relative dates (hoje/amanhã/depois de amanhã) plus explicit times. Not all notifications expose full text; some apps hide it.
 
-Com Android Studio, JDK 17 e SDK 35, importe o projeto e execute `:app:testDebugUnitTest :app:assembleDebug` (Gradle 8.9). APK em `app/build/outputs/apk/debug/app-debug.apk`.
-
-## Limitações
-
-- Suporta hoje, amanhã, depois de amanhã e horário explícito em português.
-- Não monitora conversas, tela ou notificações; recebe texto manual ou via compartilhamento `text/plain`.
-- Requer aplicativo de calendário instalado para abrir a sugestão.
-- Nenhuma permissão sensível, internet ou root.
+No overlay, Accessibility Service, keyboard interception, automatic calendar write, or server upload.
