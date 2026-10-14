@@ -28,7 +28,7 @@ class MainActivity : Activity() {
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(32, 40, 32, 32) }
         val content = ScrollView(this).apply { addView(root) }
         fun add(view: android.view.View) { root.addView(view, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)) }
-        add(TextView(this).apply { text = "Context Nudge · 0.2"; textSize = 25f })
+        add(TextView(this).apply { text = "Context Nudge · 0.3"; textSize = 25f })
         add(TextView(this).apply { text = "Análise local. Nenhum texto de notificação é salvo ou enviado. Sugestões exigem sua confirmação."; textSize = 15f })
         enabled = Switch(this).apply {
             text = "Analisar notificações elegíveis (desligado por padrão)"
@@ -39,6 +39,18 @@ class MainActivity : Activity() {
             }
         }
         add(enabled)
+        add(TextView(this).apply { text = "Janela flutuante experimental: aparece sobre outros apps somente após sua autorização. Pode ser desativada a qualquer momento." })
+        add(Switch(this).apply {
+            text = "Mostrar sugestão sobre outros apps (opcional)"
+            isChecked = NudgePreferences.overlay(this@MainActivity)
+            setOnCheckedChangeListener { _, checked ->
+                NudgePreferences.setOverlay(this@MainActivity, checked)
+                if (checked && !Settings.canDrawOverlays(this@MainActivity)) {
+                    Toast.makeText(this@MainActivity, "Autorize a sobreposição e retorne ao app", Toast.LENGTH_LONG).show()
+                    startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, android.net.Uri.parse("package:$packageName")))
+                }
+            }
+        })
         add(Button(this).apply { text = "Autorizar acesso às notificações nas Configurações"; setOnClickListener { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) } })
         add(TextView(this).apply { text = "Excluir aplicativos (um nome de pacote por linha, ex.: com.exemplo.app):" })
         exclusions = EditText(this).apply { minLines = 2; hint = "Opcional"; setText(NudgePreferences.excluded(this@MainActivity).sorted().joinToString("\n")) }
@@ -73,8 +85,8 @@ class MainActivity : Activity() {
         action.isEnabled = suggestion != null
         result.text = suggestion?.let {
             val date = Instant.ofEpochMilli(it.startMillis).atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("dd/MM/yyyy 'às' HH:mm", Locale.forLanguageTag("pt-BR")))
-            "Sugestão: criar evento em $date (duração inicial: 1 hora). Revise antes de salvar."
-        } ?: "Não identifiquei uma data relativa futura com horário explícito. Experimente 'amanhã às 15h'."
+            "${it.title}: $date (duração inicial: 1 hora). Revise antes de salvar."
+        } ?: "Não identifiquei uma data futura com horário explícito. Experimente 'dia 19 de dezembro às 14h'."
     }
     private fun openCalendar(event: EventSuggestion) {
         val calendarIntent = Intent(Intent.ACTION_INSERT).apply {

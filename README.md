@@ -1,20 +1,22 @@
-# Context Nudge 0.2
+# Context Nudge 0.3 — código-fonte
 
-Independent Android Kotlin prototype. Local, opt-in notification processing via `NotificationListenerService`.
+Aplicativo independente para Android, sem root. Processa localmente notificações após consentimento explícito; não salva texto de notificações. Sugestões nunca criam eventos sem confirmação.
 
-## Installation
-Upload the *contents* of this directory to the root of your GitHub repository. Preserve `.github/workflows/build.yml`; remove old duplicate workflows. The GitHub Action compiles `app-debug.apk`.
+## Novidades
+- Datas: hoje, amanhã, depois de amanhã, `19 de dezembro`, `19/12`, `19/12/2027`, dias da semana e horário explícito.
+- Títulos básicos por contexto (prova, consulta, reunião, aula, entrevista).
+- Janela flutuante experimental, opcional, requer autorização `Aparecer sobre outros apps`; botões Ignorar e Revisar.
+- Notificação normal permanece disponível.
 
-If the new APK does not install over the old one because the debug signing key differs, uninstall the old version first (it does not retain user data). Back up anything you need beforehand.
+## Limites
+- Não há integração oficial com Now Bar/Now Brief: APIs e permissões da Samsung não são públicas para esse caso. Não imitamos uma sessão de mídia para forçar presença na Now Bar.
+- Não copia código ou modelos da Samsung. Arquitetura inspirada em análise funcional independente.
+- Parser conservador: exige data futura e hora explícita; não infere duração. Próxima ocorrência de dia da semana é escolhida (hoje aponta para semana seguinte).
+- Sobreposição pode não aparecer quando Android/Samsung restringir janelas ou app estiver em tela sensível.
+- A janela flutuante é experimental; se houver incômodo, desative no aplicativo ou revogue a permissão do Android.
 
-## Test
-1. Launch app. Notification analysis defaults OFF.
-2. Grant notification posting permission and enable Context Nudge under Android Notification access.
-3. Toggle analysis ON in the app. Optional: exclude source apps by package name, one per line.
-4. Have another device send a test message: `Amanhã às 15h vamos ao shopping` to an app that displays its text in a notification.
-5. Tap the Context Nudge suggestion notification; review the calendar event and save manually if desired.
-6. Turn analysis OFF to stop processing. Revoke notification access in Android Settings to remove access completely.
+## Build
+Workflow GitHub Actions incluso: execute Build test APK, baixe artefato `ContextNudge-debug-apk`. Debug builds em runners distintos podem usar assinaturas diferentes; se não atualizar, desinstale a versão anterior (isso apaga preferências).
 
-Privacy: notification text is processed in memory, no text history or network permission. App notification only contains generic text. Avoid testing with sensitive real messages. Android notification access is broad even though the app filters content; exclusions are applied after Android grants access. The parser is deliberately conservative: relative dates (hoje/amanhã/depois de amanhã) plus explicit times. Not all notifications expose full text; some apps hide it.
-
-No overlay, Accessibility Service, keyboard interception, automatic calendar write, or server upload.
+## Teste
+Ative análise, autorize notificações, opcionalmente ative sobreposição. Use Termux:API `termux-notification --id 9876 --title "Teste" --content "Tenho prova dia 19 de dezembro às 14h"`. A data deve ser futura em relação ao dia do teste. Revise no calendário, sem salvar automaticamente.

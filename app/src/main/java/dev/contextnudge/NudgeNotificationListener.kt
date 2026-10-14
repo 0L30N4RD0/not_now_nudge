@@ -45,5 +45,6 @@ class NudgeNotificationListener : NotificationListenerService() {
             .setContentText("Toque para revisar uma sugestão de calendário")
             .setContentIntent(pending).setAutoCancel(true).build()
         manager.notify(key.hashCode(), notification)
+        NudgeOverlay.show(this, text, suggestion)
     }
 }
